@@ -76,6 +76,7 @@ def tesseract_ocr(image_path, lang="eng", psm=None, config=""):
     f = open('test.txt', 'r')
     file_contents = f.read()
     os.remove(output_path)
+    os.remove(image_path)
     return file_contents
 
 
