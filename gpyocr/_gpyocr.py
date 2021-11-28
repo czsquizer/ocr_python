@@ -18,7 +18,8 @@ import string
 import random
 import subprocess
 import csv
-
+import datetime
+import time
 import cv2
 import numpy as np
 from PIL import Image
@@ -54,7 +55,7 @@ def tesseract_ocr(image_path, lang="eng", psm=None, config=""):
     """
     ##image_path = prepare_tesseract_input(image)
     #output_path = prepare_tesseract_output()
-    output_path = '/home/ocr/server/test'
+    output_path = '/home/ocr/server/outputs/'+str(time.time())+datetime.datetime.now().strftime("%y%m%d_%H%M%S")
     tesseract_cmd = ["tesseract", image_path, output_path]
     if lang:
         tesseract_cmd.append("-l")
@@ -73,8 +74,7 @@ def tesseract_ocr(image_path, lang="eng", psm=None, config=""):
         raise RuntimeError("Tesseract error: ", exc.returncode, exc.output)
 
     output_path += ".txt"
-    f = open('test.txt', 'r')
-    file_contents = f.read()
+    file_contents = contents = open(output_path).read()
     os.remove(output_path)
     os.remove(image_path)
     return file_contents

@@ -2,19 +2,28 @@ import os
 import io
 import logging
 import gpyocr
+import datetime
 import time
-#import cv2
-#import shutil
-
 from logging import Formatter, FileHandler
 from flask import Flask, request, jsonify, abort
-
-#shutil.rmtree('uploads')
-#os.mkdir('uploads')
+from threading import Thread
 
 app = Flask(__name__)
 
-app.config['UPLOAD_FOLDER'] = 'uploads'
+import threading
+import queue
+
+queue = queue.Queue()
+
+def storeInQueue(f):
+  def wrapper(*args):
+    queue.put(f(*args))
+  return wrapper
+
+
+@storeInQueue
+def get_name(target):
+    return gpyocr.tesseract_ocr(target)
 
 def genFilename(s):
     arr_s = s.split('.')
@@ -26,9 +35,11 @@ def ocr():
     try:
         url = request.args.get('file')
         if 'jpg' in url:
-            output = gpyocr.tesseract_ocr('/home/ocr/server/uploads/'+url)
-            os.remove('uploads/'+url)
-            return output
+            t = threading.Thread(target=get_name, args = ('/home/ocr/server/uploads/'+url,))
+            t.start()
+            ocrText = queue.get()
+            t.join()
+            return ocrText
         else:
             return jsonify({"error": "only .jpg files, please"})
     except:
@@ -39,9 +50,9 @@ def ocr():
 @app.route("/uploadImage", methods=['POST'])
 def uploadImg():
     file = request.files['file']
-    file.filename = genFilename(file.filename)
+    file.filename = datetime.datetime.now().strftime("%y%m%d_%H%M%S") + str(time.time()) + file.filename
     if file:
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+        file.save(os.path.join('uploads', file.filename))
     return file.filename
 
 if not app.debug:
