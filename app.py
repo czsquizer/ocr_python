@@ -41,4 +41,4 @@ async def process_image(file: UploadFile = File(...)):
         return {"error": "only .jpg files, please"}
 
 if __name__ == '__main__':
-    uvicorn.run("app:app", port=5000)
+    uvicorn.run("app:app", port=5000, host='0.0.0.0')
