@@ -1,4 +1,5 @@
 pytesseract~=0.3.8
 uvicorn~=0.15.0
 Pillow~=8.4.0
-fastapi~=0.70.0
+fastapi~=0.70.1
+python-multipart~=0.0.5
