@@ -13,23 +13,27 @@ import queue
 import string
 import random
 
-#pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" # Uncomment this if you are using Windows
+pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" # Comment this out if you are on Linux
 
 blacklisted_words = [
     "fallout", "undetected", "fallout", "player options", "self options", "weapon options", "world options", "teleport options", "lua options", "online players", "execute", "screenshot-basic",
     "aimbot", "resource:", "invicible", "injected"
 ]
 app = FastAPI()
-queue = queue.Queue()
+queueText = queue.Queue()
+queueImage = queue.Queue()
 
-
-def store_in_queue(f):
+def store_in_queueText(f):
     def wrapper(*args):
-        queue.put(f(*args))
+        queueText.put(f(*args))
     return wrapper
 
+def store_in_queueImage(f):
+    def wrapper(*args):
+        queueImage.put(f(*args))
+    return wrapper
 
-@store_in_queue
+@store_in_queueText
 def get_data(image):
     return pytesseract.image_to_string(image, output_type=pytesseract.Output.DICT)
 
@@ -60,7 +64,7 @@ async def process_image(file: UploadFile = File(...)):
         image = Image.open(file.file)
         t = threading.Thread(target=get_data, args=(image,))
         t.start()
-        ocrText = queue.get()
+        ocrText = queueText.get()
         t.join()
         result = check_data(ocrText)
         if result:
@@ -76,11 +80,19 @@ async def process_image(file: UploadFile = File(...)):
         return {"error": "only .jpg files, please"}
 
 
-@app.get("/images/{file_name}")
-async def get_image(file_name: str):
-    image = Path(f"images/{file_name}")
+@store_in_queueImage
+def get_image_a(name):
+    image = Path(f"images/{name}")
     if image.is_file():
         return FileResponse(str(image))
+
+@app.get("/images/{file_name}")
+async def get_image(file_name: str):
+    t = threading.Thread(target=get_image_a, args=(file_name,))
+    t.start()
+    image = queueImage.get()
+    t.join()
+    return image
 
 if __name__ == "__main__":
     uvicorn.run("app:app", port=5000, host="0.0.0.0")
