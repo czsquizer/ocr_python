@@ -22,6 +22,7 @@ blacklisted_words = [
 app = FastAPI()
 queueText = queue.Queue()
 queueImage = queue.Queue()
+queueUpload = queue.Queue()
 
 def store_in_queueText(f):
     def wrapper(*args):
@@ -31,6 +32,11 @@ def store_in_queueText(f):
 def store_in_queueImage(f):
     def wrapper(*args):
         queueImage.put(f(*args))
+    return wrapper
+
+def store_in_queueUpload(f):
+    def wrapper(*args):
+        queueUpload.put(f(*args))
     return wrapper
 
 @store_in_queueText
@@ -48,12 +54,17 @@ def check_data(data):
         if word in data:
             return word
 
+def upload_image_as(file, name):
+        image = Image.open(file)
+        image.save(f"images/{name}")
+
 @app.post("/uploadImage")
 async def upload_image(file: UploadFile = File(...)):
     if file.content_type == "image/jpeg":
-        image = Image.open(file.file)
         random_name = generate_random_name()
-        image.save(f"images/{random_name}")
+        t = threading.Thread(target=upload_image_as, args=(file.file, random_name,))
+        t.start()
+        t.join()
         return random_name
     else:
         return {"error": "only .jpg files, please"}
