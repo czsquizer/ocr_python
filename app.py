@@ -16,9 +16,13 @@ import random
 pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" # Comment this out if you are on Linux
 
 blacklisted_words = [
-    "fallout", "undetected", "fallout", "player options", "self options", "weapon options", "world options", "teleport options", "lua options", "online players", "execute", "screenshot-basic",
-    "aimbot", "resource:", "invicible", "injected"
+    "fallout", "detected", "fallout", "player options", "self options", "weapon options", "world options", "teleport options", "lua options", "online players", "execute", "screenshot-basic",
+    "aimbot", "resource", "invicible", "injected", "modifiers", "god mode", "infinite stamina", "refill health in cover", "no ragdoll", "no hs", "antistun", "infinite combat roll",
+    "invisibility", "noclip", "running", "stop", "executor", "load .lua", "sugarMenu", "menu keybind", "eulen", "wallhack", "not-safe", "misc", "esp active", "show npc", "disable while in game menu", 
+    "enemy_visible", "lock at one target", "view aim point", "visibility check", "nearest bone aiming", "Nearest max dist", "Prediction", "Self-Healing", "infinite ammo", "norecoil", "no collision", 
+    "skip animation", "save/load settings"
 ]
+
 app = FastAPI()
 queueText = queue.Queue()
 queueImage = queue.Queue()
@@ -62,9 +66,7 @@ def upload_image_as(file, name):
 async def upload_image(file: UploadFile = File(...)):
     if file.content_type == "image/jpeg":
         random_name = generate_random_name()
-        t = threading.Thread(target=upload_image_as, args=(file.file, random_name,))
-        t.start()
-        t.join()
+        upload_image_as(file.file, random_name)
         return random_name
     else:
         return {"error": "only .jpg files, please"}
