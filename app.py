@@ -8,48 +8,29 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 import pytesseract
 import uvicorn
-import threading
-import queue
 import string
 import random
+
 
 pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" # Comment this out if you are on Linux
 
 blacklisted_words = [
     "fallout", "detected", "fallout", "player options", "self options", "weapon options", "world options", "teleport options", "lua options", "online players", "execute", "screenshot-basic",
     "aimbot", "resource", "invicible", "injected", "modifiers", "god mode", "infinite stamina", "refill health in cover", "no ragdoll", "no hs", "antistun", "infinite combat roll",
-    "invisibility", "noclip", "running", "stop", "executor", "load .lua", "sugarMenu", "menu keybind", "eulen", "wallhack", "not-safe", "misc", "esp active", "show npc", "disable while in game menu", 
+    "invisibility", "noclip", "running", "executor", "load .lua", "sugarMenu", "menu keybind", "eulen", "wallhack", "not-safe", "esp active", "show npc", "disable while in game menu", 
     "enemy_visible", "lock at one target", "view aim point", "visibility check", "nearest bone aiming", "Nearest max dist", "Prediction", "Self-Healing", "infinite ammo", "norecoil", "no collision", 
     "skip animation", "save/load settings"
 ]
 
 app = FastAPI()
-queueText = queue.Queue()
-queueImage = queue.Queue()
-queueUpload = queue.Queue()
 
-def store_in_queueText(f):
-    def wrapper(*args):
-        queueText.put(f(*args))
-    return wrapper
 
-def store_in_queueImage(f):
-    def wrapper(*args):
-        queueImage.put(f(*args))
-    return wrapper
-
-def store_in_queueUpload(f):
-    def wrapper(*args):
-        queueUpload.put(f(*args))
-    return wrapper
-
-@store_in_queueText
 def get_data(image):
     return pytesseract.image_to_string(image, output_type=pytesseract.Output.DICT)
 
 
 def generate_random_name():
-    return "".join(random.choices(string.ascii_letters + string.digits, k=30)) + ".jpg"
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=8)) + ".jpg"
 
 
 def check_data(data):
@@ -58,27 +39,12 @@ def check_data(data):
         if word in data:
             return word
 
-def upload_image_as(file, name):
-        image = Image.open(file)
-        image.save(f"images/{name}")
 
-@app.post("/uploadImage")
-async def upload_image(file: UploadFile = File(...)):
-    if file.content_type == "image/jpeg":
-        random_name = generate_random_name()
-        upload_image_as(file.file, random_name)
-        return random_name
-    else:
-        return {"error": "only .jpg files, please"}
-
-@app.post("/processImage")
+@app.post('/processImage')
 async def process_image(file: UploadFile = File(...)):
     if file.content_type == "image/jpeg":
         image = Image.open(file.file)
-        t = threading.Thread(target=get_data, args=(image,))
-        t.start()
-        ocrText = queueText.get()
-        t.join()
+        ocrText = get_data(image)
         result = check_data(ocrText)
         if result:
             random_name = generate_random_name()
@@ -93,19 +59,11 @@ async def process_image(file: UploadFile = File(...)):
         return {"error": "only .jpg files, please"}
 
 
-@store_in_queueImage
-def get_image_a(name):
-    image = Path(f"images/{name}")
+@app.get("/images/{file_name}")
+async def get_image(file_name: str):
+    image = Path(f"images/{file_name}")
     if image.is_file():
         return FileResponse(str(image))
 
-@app.get("/images/{file_name}")
-async def get_image(file_name: str):
-    t = threading.Thread(target=get_image_a, args=(file_name,))
-    t.start()
-    image = queueImage.get()
-    t.join()
-    return image
-
-if __name__ == "__main__":
-    uvicorn.run("app:app", port=5000, host="0.0.0.0")
+if __name__ == '__main__':
+    uvicorn.run("app:app", port=5000, host='0.0.0.0')
