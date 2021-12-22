@@ -39,6 +39,15 @@ def check_data(data):
         if word in data:
             return word
 
+@app.post("/uploadImage")
+async def upload_image(file: UploadFile = File(...)):
+    if file.content_type == "image/jpeg":
+        random_name = generate_random_name()
+        image = Image.open(file.file)
+        image.save(f"images/{random_name}")
+        return random_name
+    else:
+        return {"error": "only .jpg files, please"}
 
 @app.post('/processImage')
 async def process_image(file: UploadFile = File(...)):
