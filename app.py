@@ -17,8 +17,8 @@ pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesse
 blacklisted_words = [
     "fallout", "detected", "fallout", "player options", "self options", "weapon options", "world options", "teleport options", "lua options", "online players", "execute", "screenshot-basic",
     "aimbot", "resource", "invicible", "injected", "modifiers", "god mode", "infinite stamina", "refill health in cover", "no ragdoll", "antistun", "infinite combat roll",
-    "invisibility", "noclip", "executor", "load .lua", "sugarMenu", "eulen", "wallhack", "not-safe", "esp active", "show npc", "disable while in game menu", 
-    "enemy_visible", "lock at one target", "view aim point", "visibility check", "nearest bone aiming", "Nearest max dist", "Prediction", "Self-Healing", "infinite ammo", "norecoil", "no collision", 
+    "invisibility", "executor", "load .lua", "sugar", "eulen", "wallhack", "not-safe", "esp active", "show npc", "disable while in game menu", 
+    "enemy_visible", "lock at one target", "view aim point", "visibility check", "nearest bone aiming", "nearest max dist", "prediction", "self-healing", "infinite ammo", "norecoil", "no collision", 
     "save/load settings"
 ]
 
