@@ -6,13 +6,16 @@ from PIL import Image
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
+from sys import platform
 import pytesseract
 import uvicorn
 import string
 import random
 
+token = 'NOTOKEN' # Change to token to match the token in the anticheat. It is not necessary, but HIGHLY recommended
 
-pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" # Comment this out if you are on Linux
+if platform == "win32":
+    pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 blacklisted_words = [
     "fallout", "detected", "fallout", "player options", "self options", "weapon options", "world options", "teleport options", "lua options", "online players", "execute", "screenshot-basic",
@@ -39,7 +42,7 @@ def check_data(data):
         if word in data:
             return word
 
-@app.post("/uploadImage")
+@app.post(token + "/uploadImage")
 async def upload_image(file: UploadFile = File(...)):
     if file.content_type == "image/jpeg":
         random_name = generate_random_name()
@@ -49,7 +52,7 @@ async def upload_image(file: UploadFile = File(...)):
     else:
         return {"error": "only .jpg files, please"}
 
-@app.post('/processImage')
+@app.post(token + '/processImage')
 async def process_image(file: UploadFile = File(...)):
     if file.content_type == "image/jpeg":
         image = Image.open(file.file)
@@ -68,7 +71,7 @@ async def process_image(file: UploadFile = File(...)):
         return {"error": "only .jpg files, please"}
 
 
-@app.get("/images/{file_name}")
+@app.get(token + "/images/{file_name}")
 async def get_image(file_name: str):
     image = Path(f"images/{file_name}")
     if image.is_file():
