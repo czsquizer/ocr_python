@@ -42,7 +42,7 @@ def check_data(data):
         if word in data:
             return word
 
-@app.post(token + "/uploadImage")
+@app.post('/'+token + "/uploadImage")
 async def upload_image(file: UploadFile = File(...)):
     if file.content_type == "image/jpeg":
         random_name = generate_random_name()
@@ -52,7 +52,7 @@ async def upload_image(file: UploadFile = File(...)):
     else:
         return {"error": "only .jpg files, please"}
 
-@app.post(token + '/processImage')
+@app.post('/'+token + '/processImage')
 async def process_image(file: UploadFile = File(...)):
     if file.content_type == "image/jpeg":
         image = Image.open(file.file)
@@ -71,7 +71,7 @@ async def process_image(file: UploadFile = File(...)):
         return {"error": "only .jpg files, please"}
 
 
-@app.get(token + "/images/{file_name}")
+@app.get('/'+token + "/images/{file_name}")
 async def get_image(file_name: str):
     image = Path(f"images/{file_name}")
     if image.is_file():
