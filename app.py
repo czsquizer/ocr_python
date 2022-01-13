@@ -71,7 +71,7 @@ async def process_image(file: UploadFile = File(...)):
         return {"error": "only .jpg files, please"}
 
 
-@app.get('/'+token + "/images/{file_name}")
+@app.get("/images/{file_name}")
 async def get_image(file_name: str):
     image = Path(f"images/{file_name}")
     if image.is_file():
