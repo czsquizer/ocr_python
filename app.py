@@ -25,7 +25,7 @@ blacklisted_words = [
     "save/load settings"
 ]
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None)
 
 
 def get_data(image):
